@@ -57,16 +57,18 @@ def get_sheet_client():
         "https://www.googleapis.com/auth/drive",
     ]
 
-    # 1) Tabela TOML (AttrDict) -> dict
-    if "gcp_service_account" in st.secrets and isinstance(st.secrets["gcp_service_account"], dict):
-        info = dict(st.secrets["gcp_service_account"])
-        if "token_uri" not in info:
-            info["token_uri"] = "https://oauth2.googleapis.com/token"
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
-        return gspread.authorize(creds)
-        
-        raise FileNotFoundError("Credenciais não encontradas.")
+    # ÚNICO caminho suportado: TOML tabela [gcp_service_account]
+    if "gcp_service_account" not in st.secrets or not isinstance(st.secrets["gcp_service_account"], dict):
+        raise FileNotFoundError(
+            "Secret 'gcp_service_account' não encontrado. Configure em Settings → Secrets como tabela TOML."
+        )
 
+    info = dict(st.secrets["gcp_service_account"])  # AttrDict -> dict
+    if "token_uri" not in info:
+        info["token_uri"] = "https://oauth2.googleapis.com/token"
+
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
+    return gspread.authorize(creds)
 
 def append_row_consulta(consultor: str, data_simul: str, data_nasc: str,
                         parcelas: int, saldo: float, liquido: float, tac_perc: float):
