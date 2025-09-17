@@ -3,6 +3,14 @@
 
 import streamlit as st
 import datetime as dt
+# DEBUG TEMPORÁRIO — remova depois
+import streamlit as st
+st.sidebar.write("Secrets keys:", list(st.secrets.keys()))
+if "gcp_service_account" in st.secrets:
+    st.sidebar.success("Secret OK")
+    st.sidebar.write("client_email:", st.secrets["gcp_service_account"].get("client_email", "?"))
+else:
+    st.sidebar.error("gcp_service_account NÃO encontrado")
 
 # ======= CONFIG =======
 MONTHLY_RATE = 0.0179              # 1,79% a.m.
