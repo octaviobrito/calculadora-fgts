@@ -5,6 +5,8 @@ import streamlit as st
 import datetime as dt
 
 # DEBUG TEMPORÁRIO — remova depois
+st.sidebar.write("Tipo do gcp_service_account:", type(st.secrets.get("gcp_service_account")))
+
 st.sidebar.write("Secrets keys carregadas:", list(st.secrets.keys()))
 if "gcp_service_account" in st.secrets:
     st.sidebar.success("gcp_service_account OK")
