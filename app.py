@@ -65,21 +65,23 @@ def get_sheet_client():
         "https://www.googleapis.com/auth/drive",
     ]
 
-    # LER COMO DICIONÁRIO (TOML TABELA): st.secrets["gcp_service_account"] já é um dict
-    if "gcp_service_account" in st.secrets and isinstance(st.secrets["gcp_service_account"], dict):
-        info = dict(st.secrets["gcp_service_account"])
+    # ✅ Streamlit secrets como TABELA TOML (AttrDict) -> converte p/ dict e usa
+    if "gcp_service_account" in st.secrets:
+        sa = st.secrets["gcp_service_account"]
+        info = dict(sa)  # AttrDict -> dict
         if "token_uri" not in info:
             info["token_uri"] = "https://oauth2.googleapis.com/token"
         creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
         return gspread.authorize(creds)
 
-    # Fallback: arquivo local (se você quiser usar localmente sem secrets)
+    # 🔁 Fallback local com arquivo (opcional)
     from pathlib import Path
     cred_path = Path("credenciais.json")
     if cred_path.exists():
         creds = ServiceAccountCredentials.from_json_keyfile_name(str(cred_path), scopes=scopes)
         return gspread.authorize(creds)
 
+    # ❌ Se chegou aqui, realmente não achou credenciais
     raise FileNotFoundError("Credenciais não encontradas. Configure .streamlit/secrets.toml (gcp_service_account).")
 
 def append_row_consulta(consultor: str, data_simul: str, data_nasc: str,
