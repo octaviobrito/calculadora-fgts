@@ -13,20 +13,7 @@ if "gcp_service_account" in st.secrets:
     st.sidebar.write("client_email:", st.secrets["gcp_service_account"].get("client_email", "?"))
 else:
     st.sidebar.error("gcp_service_account NÃO encontrado")
-    
-    try:
-    from collections.abc import Mapping
-    sa = st.secrets.get("gcp_service_account")
-    info = dict(sa) if isinstance(sa, Mapping) else {}
-    pk = info.get("private_key", "")
-    st.sidebar.write("AttrDict?", isinstance(sa, Mapping))
-    st.sidebar.write("PK startswith BEGIN?", pk.strip().startswith("-----BEGIN PRIVATE KEY-----"))
-    st.sidebar.write("PK endswith END?", pk.strip().endswith("-----END PRIVATE KEY-----"))
-    st.sidebar.write("PK line count:", len(pk.splitlines()))
-except Exception as _e:
-    st.sidebar.write("Checagem PK falhou:", _e)
-
-
+        
 # ======= CONFIG =======
 MONTHLY_RATE = 0.0179              # 1,79% a.m.
 IOF_RATE     = 0.0075              # ~0,75% (simplificado)
