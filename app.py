@@ -66,17 +66,26 @@ def get_sheet_client():
         "https://www.googleapis.com/auth/drive",
     ]
 
-    if "gcp_service_account" not in st.secrets or not isinstance(st.secrets["gcp_service_account"], dict):
+    # Mostra as chaves carregadas para debug
+    try:
+        st.sidebar.write("Secrets keys carregadas:", list(st.secrets.keys()))
+    except Exception:
+        pass
+
+    # Verifica presença e tipo da tabela
+    if "gcp_service_account" not in st.secrets:
         raise FileNotFoundError(
-            "Secret 'gcp_service_account' não encontrado. Configure em Settings → Secrets como tabela TOML."
+            "Secret 'gcp_service_account' não encontrado. Configure em Settings → Secrets (ou .streamlit/secrets.toml) como TABELA TOML."
+        )
+    if not isinstance(st.secrets["gcp_service_account"], dict):
+        raise TypeError(
+            "Secret 'gcp_service_account' existe, mas não é uma TABELA TOML. Use [gcp_service_account] ... (não string JSON)."
         )
 
     info = dict(st.secrets["gcp_service_account"])
-
-    # Garante token_uri (alguns JSONs antigos não trazem)
     info.setdefault("token_uri", "https://oauth2.googleapis.com/token")
 
-    # Se, por acaso, vier com '\n' literais (string JSON), converte para quebras reais
+    # Conserta caso tenham sobrado '\n' literais
     pk = info.get("private_key", "")
     if "\\n" in pk and "\n" not in pk:
         info["private_key"] = pk.replace("\\n", "\n")
