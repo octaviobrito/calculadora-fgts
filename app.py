@@ -47,7 +47,7 @@ def parse_brl(texto: str) -> float:
 
 # --------- Google Sheets ----------
 def get_sheet_client():
-    import gspread, json
+    import gspread
     from oauth2client.service_account import ServiceAccountCredentials
 
     scopes = [
