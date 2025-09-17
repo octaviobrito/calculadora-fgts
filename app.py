@@ -2,16 +2,7 @@
 # Requisitos: pip install streamlit gspread oauth2client
 
 import streamlit as st
-import datetime as dt 
-
-# DEBUG TEMPORÁRIO — remova depois
-import streamlit as st
-st.sidebar.write("Secrets keys:", list(st.secrets.keys()))
-if "gcp_service_account" in st.secrets:
-    st.sidebar.success("Secret OK")
-    st.sidebar.write("client_email:", st.secrets["gcp_service_account"].get("client_email", "?"))
-else:
-    st.sidebar.error("gcp_service_account NÃO encontrado")
+import datetime as dt
 
 # ======= CONFIG =======
 MONTHLY_RATE = 0.0179              # 1,79% a.m.
@@ -73,6 +64,9 @@ def get_sheet_client():
             info["token_uri"] = "https://oauth2.googleapis.com/token"
         creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
         return gspread.authorize(creds)
+        
+        raise FileNotFoundError("Credenciais não encontradas.")
+
 
 def append_row_consulta(consultor: str, data_simul: str, data_nasc: str,
                         parcelas: int, saldo: float, liquido: float, tac_perc: float):
