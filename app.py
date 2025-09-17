@@ -3,6 +3,7 @@
 
 import streamlit as st
 import datetime as dt
+
 # DEBUG TEMPORÁRIO — remova depois
 import streamlit as st
 st.sidebar.write("Secrets keys:", list(st.secrets.keys()))
