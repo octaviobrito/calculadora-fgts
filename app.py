@@ -55,7 +55,7 @@ def parse_brl(texto: str) -> float:
 
 # --------- Google Sheets ----------
 def get_sheet_client():
-    import gspread
+    import gspread, json
     from oauth2client.service_account import ServiceAccountCredentials
 
     scopes = [
@@ -65,24 +65,28 @@ def get_sheet_client():
         "https://www.googleapis.com/auth/drive",
     ]
 
-    # ✅ Streamlit secrets como TABELA TOML (AttrDict) -> converte p/ dict e usa
-    if "gcp_service_account" in st.secrets:
-        sa = st.secrets["gcp_service_account"]
-        info = dict(sa)  # AttrDict -> dict
+    # 1) Tabela TOML (AttrDict) -> dict
+    if "gcp_service_account" in st.secrets and isinstance(st.secrets["gcp_service_account"], dict):
+        info = dict(st.secrets["gcp_service_account"])
         if "token_uri" not in info:
             info["token_uri"] = "https://oauth2.googleapis.com/token"
         creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
         return gspread.authorize(creds)
 
-    # 🔁 Fallback local com arquivo (opcional)
+    # 2) JSON inteiro como string
+    if "gcp_service_account_json" in st.secrets:
+        info = json.loads(st.secrets["gcp_service_account_json"])
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
+        return gspread.authorize(creds)
+
+    # 3) Fallback local
     from pathlib import Path
     cred_path = Path("credenciais.json")
     if cred_path.exists():
         creds = ServiceAccountCredentials.from_json_keyfile_name(str(cred_path), scopes=scopes)
         return gspread.authorize(creds)
 
-    # ❌ Se chegou aqui, realmente não achou credenciais
-    raise FileNotFoundError("Credenciais não encontradas. Configure .streamlit/secrets.toml (gcp_service_account).")
+    raise FileNotFoundError("Credenciais não encontradas.")
 
 def append_row_consulta(consultor: str, data_simul: str, data_nasc: str,
                         parcelas: int, saldo: float, liquido: float, tac_perc: float):
