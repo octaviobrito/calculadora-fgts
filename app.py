@@ -74,12 +74,6 @@ def get_sheet_client():
         creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
         return gspread.authorize(creds)
 
-    # 2) JSON inteiro como string
-    if "gcp_service_account_json" in st.secrets:
-        info = json.loads(st.secrets["gcp_service_account_json"])
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
-        return gspread.authorize(creds)
-
     raise FileNotFoundError("Credenciais não encontradas.")
 
 def append_row_consulta(consultor: str, data_simul: str, data_nasc: str,
