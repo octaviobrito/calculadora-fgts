@@ -57,6 +57,7 @@ def parse_brl(texto: str) -> float:
 def get_sheet_client():
     import gspread
     from oauth2client.service_account import ServiceAccountCredentials
+    import streamlit as st
 
     scopes = [
         "https://spreadsheets.google.com/feeds",
@@ -65,20 +66,20 @@ def get_sheet_client():
         "https://www.googleapis.com/auth/drive",
     ]
 
-    # ÚNICO caminho suportado: TOML tabela [gcp_service_account]
-    if "gcp_service_account" in st.secrets and isinstance(st.secrets["gcp_service_account"], dict):
-        info = dict(st.secrets["gcp_service_account"])
-         if "token_uri" not in info:
-            info["token_uri"] = "https://oauth2.googleapis.com/token"
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
-    return gspread.authorize(creds)
+    if "gcp_service_account" not in st.secrets or not isinstance(st.secrets["gcp_service_account"], dict):
         raise FileNotFoundError(
             "Secret 'gcp_service_account' não encontrado. Configure em Settings → Secrets como tabela TOML."
         )
 
-    info = dict(st.secrets["gcp_service_account"])  # AttrDict -> dict
-    if "token_uri" not in info:
-        info["token_uri"] = "https://oauth2.googleapis.com/token"
+    info = dict(st.secrets["gcp_service_account"])
+
+    # Garante token_uri (alguns JSONs antigos não trazem)
+    info.setdefault("token_uri", "https://oauth2.googleapis.com/token")
+
+    # Se, por acaso, vier com '\n' literais (string JSON), converte para quebras reais
+    pk = info.get("private_key", "")
+    if "\\n" in pk and "\n" not in pk:
+        info["private_key"] = pk.replace("\\n", "\n")
 
     creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
     return gspread.authorize(creds)
