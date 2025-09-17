@@ -80,13 +80,6 @@ def get_sheet_client():
         creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
         return gspread.authorize(creds)
 
-    # 3) Fallback local
-    from pathlib import Path
-    cred_path = Path("credenciais.json")
-    if cred_path.exists():
-        creds = ServiceAccountCredentials.from_json_keyfile_name(str(cred_path), scopes=scopes)
-        return gspread.authorize(creds)
-
     raise FileNotFoundError("Credenciais não encontradas.")
 
 def append_row_consulta(consultor: str, data_simul: str, data_nasc: str,
