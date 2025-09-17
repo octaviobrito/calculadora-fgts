@@ -7,9 +7,6 @@ import datetime as dt
 # DEBUG TEMPORÁRIO — remova depois
 st.sidebar.write("Tipo do gcp_service_account:", type(st.secrets.get("gcp_service_account")))
 
-else:
-    st.sidebar.error("gcp_service_account NÃO encontrado")
-
 # ======= CONFIG =======
 MONTHLY_RATE = 0.0179              # 1,79% a.m.
 IOF_RATE     = 0.0075              # ~0,75% (simplificado)
