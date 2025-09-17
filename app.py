@@ -66,6 +66,9 @@ def get_sheet_client():
     ]
 
     # ÚNICO caminho suportado: TOML tabela [gcp_service_account]
+    info = dict(st.secrets["gcp_service_account"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
+    return gspread.authorize(creds)
     if "gcp_service_account" not in st.secrets or not isinstance(st.secrets["gcp_service_account"], dict):
         raise FileNotFoundError(
             "Secret 'gcp_service_account' não encontrado. Configure em Settings → Secrets como tabela TOML."
