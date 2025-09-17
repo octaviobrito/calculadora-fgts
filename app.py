@@ -74,8 +74,6 @@ def get_sheet_client():
         creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
         return gspread.authorize(creds)
 
-    raise FileNotFoundError("Credenciais não encontradas.")
-
 def append_row_consulta(consultor: str, data_simul: str, data_nasc: str,
                         parcelas: int, saldo: float, liquido: float, tac_perc: float):
     client = get_sheet_client()
