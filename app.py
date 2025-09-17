@@ -13,6 +13,19 @@ if "gcp_service_account" in st.secrets:
     st.sidebar.write("client_email:", st.secrets["gcp_service_account"].get("client_email", "?"))
 else:
     st.sidebar.error("gcp_service_account NÃO encontrado")
+    
+    try:
+    from collections.abc import Mapping
+    sa = st.secrets.get("gcp_service_account")
+    info = dict(sa) if isinstance(sa, Mapping) else {}
+    pk = info.get("private_key", "")
+    st.sidebar.write("AttrDict?", isinstance(sa, Mapping))
+    st.sidebar.write("PK startswith BEGIN?", pk.strip().startswith("-----BEGIN PRIVATE KEY-----"))
+    st.sidebar.write("PK endswith END?", pk.strip().endswith("-----END PRIVATE KEY-----"))
+    st.sidebar.write("PK line count:", len(pk.splitlines()))
+except Exception as _e:
+    st.sidebar.write("Checagem PK falhou:", _e)
+
 
 # ======= CONFIG =======
 MONTHLY_RATE = 0.0179              # 1,79% a.m.
@@ -60,6 +73,7 @@ def get_sheet_client():
     import gspread
     from oauth2client.service_account import ServiceAccountCredentials
     import streamlit as st
+    from collections.abc import Mapping
 
     scopes = [
         "https://spreadsheets.google.com/feeds",
@@ -68,32 +82,29 @@ def get_sheet_client():
         "https://www.googleapis.com/auth/drive",
     ]
 
-    # Mostra as chaves carregadas para debug
-    try:
-        st.sidebar.write("Secrets keys carregadas:", list(st.secrets.keys()))
-    except Exception:
-        pass
-
-    # Verifica presença e tipo da tabela
-    if "gcp_service_account" not in st.secrets:
+    sa = st.secrets.get("gcp_service_account")
+    if not sa:
         raise FileNotFoundError(
-            "Secret 'gcp_service_account' não encontrado. Configure em Settings → Secrets (ou .streamlit/secrets.toml) como TABELA TOML."
-        )
-    if not isinstance(st.secrets["gcp_service_account"], dict):
-        raise TypeError(
-            "Secret 'gcp_service_account' existe, mas não é uma TABELA TOML. Use [gcp_service_account] ... (não string JSON)."
+            "Secret 'gcp_service_account' não encontrado. Configure em Settings → Secrets como TABELA TOML."
         )
 
-    info = dict(st.secrets["gcp_service_account"])
+    # Aceita AttrDict/dict/JSON string
+    if isinstance(sa, Mapping):
+        info = dict(sa)
+    else:
+        import json
+        info = json.loads(sa)
+
     info.setdefault("token_uri", "https://oauth2.googleapis.com/token")
 
-    # Conserta caso tenham sobrado '\n' literais
+    # Conserta caso ainda existam '\n' literais
     pk = info.get("private_key", "")
     if "\\n" in pk and "\n" not in pk:
         info["private_key"] = pk.replace("\\n", "\n")
 
     creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scopes=scopes)
     return gspread.authorize(creds)
+
 
 def append_row_consulta(consultor: str, data_simul: str, data_nasc: str,
                         parcelas: int, saldo: float, liquido: float, tac_perc: float):
